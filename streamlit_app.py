@@ -424,20 +424,3 @@ else:
         with tab_objects[tabs.index("Админ: спикеры")]:
             render_admin_tab()
 
-st.sidebar.header("Информация")
-st.sidebar.markdown(
-    """
-### API Endpoints
-- **Регистрация спикера**: `/speakers/enroll`
-- **Идентификация**: `/speakers/identify`
-- **Регистрация пользователя**: `/auth/register`
-- **Вход пользователя**: `/auth/login`
-- **Список спикеров (admin)**: `/speakers`
-
-### Параметры
-- **Пороговое значение**: 0.65 (65%)
-- **Формат аудио**: WAV, MP3, OGG
-"""
-)
-
-st.sidebar.markdown("---")
