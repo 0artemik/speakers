@@ -2,7 +2,8 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import List
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, DateTime, JSON, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from pgvector.sqlalchemy import Vector
 
 Base = declarative_base()
 
@@ -12,7 +13,7 @@ class Speaker(Base):
 
 	id = Column(Integer, primary_key=True, index=True)
 	name = Column(String, nullable=False)
-	embedding = Column(JSON, nullable=False)
+	embedding = Column(Vector(256), nullable=False)
 	created_at = Column(DateTime, default=datetime.utcnow)
 
 
