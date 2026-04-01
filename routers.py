@@ -1,4 +1,5 @@
 from datetime import datetime
+import math
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form
 from database import database, get_db
 from models import Speaker, SpeakerOut, User, UserOut
@@ -152,19 +153,24 @@ async def identify(file: UploadFile = File(...), db: Session = Depends(get_db)):
 			wav = wav_np
 
 		emb = encoder.embed_utterance(wav)
+		embedding_list = emb.tolist()
 
-		speakers = db.query(Speaker).all()
-		if not speakers:
+		best_result = (
+			db.query(
+				Speaker,
+				Speaker.embedding.cosine_distance(embedding_list).label("distance"),
+			)
+			.order_by("distance")
+			.first()
+		)
+		if not best_result:
 			return {"match": None, "score": 0.0}
 
-		best = None
-		best_score = -1.0
-		for sp in speakers:
-			vec = np.array(sp.embedding)
-			score = float(np.dot(emb, vec) / (np.linalg.norm(emb) * np.linalg.norm(vec) + 1e-10))
-			if score > best_score:
-				best_score = score
-				best = sp
+		best, best_distance = best_result
+		best_score = 1.0 - float(best_distance)
+		best_score = max(0.0, min(1.0, best_score))
+		if math.isnan(best_score):
+			best_score = 0.0
 
 		threshold = 0.65
 		if best_score >= threshold and best is not None:
