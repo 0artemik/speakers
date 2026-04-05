@@ -12,50 +12,12 @@
 1. Python 3.10
 2. Docker Desktop (для `docker-compose.yml`) или уже запущенный PostgreSQL
 
-## Запуск через Docker (всё в контейнерах)
+## Запуск через Docker
 
-Собирает и поднимает PostgreSQL, FastAPI (`Dockerfile`) и Streamlit.
-
+1. Поднимите БД:
 ```bash
 cd /Users/mac/Desktop/qwe/projects/speakers
-docker compose up --build -d
-```
-
-### Сборка «висит» и в терминале пусто
-
-1. **Не вешайте вывод на `tail` во время сборки.** Команда вида `docker compose build ... 2>&1 | tail -60` почти всегда **ничего не покажет**, пока сборка целиком не закончится: `tail` ждёт конца потока. Смотрите лог напрямую:
-   ```bash
-   docker compose build --progress=plain streamlit
-   ```
-   или без pipe вообще:
-   ```bash
-   docker compose build streamlit
-   ```
-
-2. **Первая сборка долгая:** в `requirements.txt` есть `torch`, `streamlit`, `scipy` и др. Шаг `pip install` внутри образа часто занимает **10–30+ минут** (скачивание колёс), при этом вывод может редко обновляться — это не обязательно зависание.
-
-3. **Долго на «Sending build context»:** если в каталоге проекта лежит тяжёлый `venv/` или датасеты, убедитесь, что они перечислены в `.dockerignore` (у нас `venv/` уже исключён).
-
-После запуска:
-- API: `http://127.0.0.1:8000`
-- Streamlit: `http://127.0.0.1:8501` (в контейнере задано `API_URL=http://api:8000`)
-
-Только API (без UI), например:
-
-```bash
-docker compose up --build -d postgres api
-```
-
-Образ собирается из `Dockerfile` (Python 3.10, зависимости из `requirements.txt`).
-
-`requirements.txt` должен быть в **UTF-8**. Если редактор сохранил файл как **UTF-16**, локальный `pip install -r requirements.txt` и сборка Docker падали бы с ошибкой вида `Invalid requirement: 'a\x00l\x00t...'`. В `Dockerfile` перед `pip install` вызывается `docker/normalize_requirements.py`, который приводит файл к UTF-8 внутри образа.
-
-## Локальная разработка (только БД в Docker)
-
-1. Поднимите PostgreSQL:
-```bash
-cd /Users/mac/Desktop/qwe/projects/speakers
-docker compose up -d postgres
+docker compose up -d
 ```
 
 2. Убедитесь, что PostgreSQL доступен по `localhost:5433`.
@@ -141,7 +103,8 @@ Backend читает `DATABASE_URL` из переменных окружения
 
 ## UI (Streamlit)
 
-`streamlit_app.py` ходит на backend по адресу из переменной окружения `API_URL` (по умолчанию `http://localhost:8000`). В `docker-compose` для сервиса `streamlit` задано `API_URL=http://api:8000`.
+`streamlit_app.py` ходит на backend по адресу:
+- `API_URL = "http://localhost:8000"`
 
 В интерфейсе доступны вкладки:
 - `Регистрация (Enroll)`

@@ -425,6 +425,3 @@ else:
     if "Админ: спикеры" in tabs and auth_state["is_admin"]:
         with tab_objects[tabs.index("Админ: спикеры")]:
             render_admin_tab()
-
-
-
